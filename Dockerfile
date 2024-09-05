@@ -4,18 +4,17 @@ FROM prom/prometheus:latest
 # Copy Prometheus configuration file
 COPY prometheus.yml /etc/prometheus/prometheus.yml
 
-# Install cAdvisor and Node Exporter
+# Install required dependencies and tools, including cAdvisor and Node Exporter
 RUN apt-get update && \
-    apt-get install -y wget && \
-    wget https://github.com/google/cadvisor/releases/latest/download/cadvisor && \
-    chmod +x cadvisor && \
-    mv cadvisor /usr/local/bin/ && \
-    wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-*.linux-amd64.tar.gz && \
-    tar xvfz node_exporter-*.linux-amd64.tar.gz && \
-    mv node_exporter-*/node_exporter /usr/local/bin/ && \
-    rm -rf node_exporter-*.linux-amd64*
+    apt-get install -y wget curl ca-certificates && \
+    wget https://github.com/google/cadvisor/releases/latest/download/cadvisor -O /usr/local/bin/cadvisor && \
+    chmod +x /usr/local/bin/cadvisor && \
+    wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.6.1.linux-amd64.tar.gz -O /tmp/node_exporter.tar.gz && \
+    tar -xvf /tmp/node_exporter.tar.gz --strip-components=1 -C /usr/local/bin node_exporter-1.6.1.linux-amd64/node_exporter && \
+    chmod +x /usr/local/bin/node_exporter && \
+    rm -rf /tmp/node_exporter.tar.gz
 
-# Expose ports for Prometheus, cAdvisor, and Node Exporter
+# Expose ports for Prometheus (9090), Node Exporter (9100), and cAdvisor (8080)
 EXPOSE 9090 9100 8080
 
 # Start Prometheus, cAdvisor, and Node Exporter
